@@ -1,0 +1,30 @@
+% OFDM Parameters
+num_carriers = 8; % Number of subcarriers
+cyclic_prefix_length = 2; % Length of cyclic prefix
+% Specify 8-bit binary data
+binary_data = [1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0]; % 8-bit binary data
+% QPSK Modulation
+qpsk_symbols = 2 * binary_data - 1;
+% Serial to Parallel Conversion
+num_symbols = numel(qpsk_symbols) / num_carriers;
+qpsk_symbols_matrix = reshape(qpsk_symbols, num_carriers, num_symbols);
+% IFFT (Inverse Fast Fourier Transform)
+ofdm_symbols = ifft(qpsk_symbols_matrix, num_carriers);
+% Add Cyclic Prefix
+ofdm_symbols_with_cp = [ofdm_symbols(end - cyclic_prefix_length + 1:end, :); ofdm_symbols];
+% Transmitted Signal
+transmitted_signal = reshape(ofdm_symbols_with_cp, 1, []);
+plot(transmitted_signal); xlabel('Time'); ylabel('Amplitude');disp(transmitted_signal);
+% Receiver
+% Remove Cyclic Prefix
+received_signal_no_cp = transmitted_signal(cyclic_prefix_length + 1:end);
+% FFT (Fast Fourier Transform)
+received_ofdm_symbols = fft(received_signal_no_cp, num_carriers);
+% Parallel to Serial Conversion
+received_qpsk_symbols = received_ofdm_symbols(:);
+% QPSK Demodulation
+received_data = real(received_qpsk_symbols) > 0;
+disp(received_data);
+% Calculate Bit Error Rate (BER)
+%ber = sum(abs(binary_data - received_data)) / length(binary_data);
+%fprintf('Bit Error Rate (BER): %f\n', ber);
